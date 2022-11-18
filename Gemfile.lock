@@ -19,7 +19,7 @@ GEM
       cloud_events (>= 0.7.0, < 2.a)
       puma (>= 4.3.0, < 6.a)
       rack (~> 2.1)
-    gapic-common (0.14.0)
+    gapic-common (0.15.1)
       faraday (>= 1.9, < 3.a)
       faraday-retry (>= 1.0, < 3.a)
       google-protobuf (~> 3.14)
@@ -67,6 +67,7 @@ GEM
       reline (>= 0.3.0)
     json (2.6.2)
     jwt (2.5.0)
+    kwalify (0.7.2)
     memoist (0.16.2)
     multi_json (1.15.0)
     mustermann (3.0.0)
@@ -84,6 +85,10 @@ GEM
       rack
     rainbow (3.1.1)
     rbtree (0.4.5)
+    reek (6.1.1)
+      kwalify (~> 0.7.0)
+      parser (~> 3.1.0)
+      rainbow (>= 2.0, < 4.0)
     regexp_parser (2.6.1)
     reline (0.3.1)
       io-console (~> 0.5)
@@ -112,7 +117,7 @@ GEM
       rack (~> 2.2, >= 2.2.4)
       rack-protection (= 3.0.3)
       tilt (~> 2.0)
-    sinatra-cors (1.2.0)
+    sinatra-cross_origin (0.4.0)
     tilt (2.0.11)
     unicode-display_width (2.3.0)
 
@@ -124,9 +129,10 @@ DEPENDENCIES
   functions_framework (~> 1.2)
   google-cloud-firestore
   grpc (= 1.47.0)
+  reek
   rubocop
   sinatra
-  sinatra-cors
+  sinatra-cross_origin
 
 BUNDLED WITH
    2.3.7

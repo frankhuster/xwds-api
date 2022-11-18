@@ -2,6 +2,7 @@
 
 require 'functions_framework'
 require 'sinatra/base'
+require 'sinatra/cross_origin'
 require './firestore'
 require './player'
 require './game'
@@ -10,6 +11,21 @@ require './game'
 class App < Sinatra::Base
   include Player
   include Game
+
+  register Sinatra::CrossOrigin
+  set :allow_origin, :any
+  set :allow_methods, %i[get put]
+  set :expose_headers, ['Content-Type']
+
+  configure do
+    enable :cross_origin
+  end
+
+  options '*' do
+    response.headers['Allow'] = 'GET,PUT,OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Access-Control-Allow-Origin'
+    200
+  end
 
   put '/player' do
     register_player
