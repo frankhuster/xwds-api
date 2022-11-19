@@ -2,36 +2,77 @@
 
 require 'securerandom'
 
+# Firestore
+#
+# Games collection path
+#
+# /games
+#
+#
+# sample open game waiting for one extra player
+#
+# {
+#   "status" : "open",
+#   "board_size": 7,
+#   "tray_size": 5,
+#   "number_of_players": 2,
+#   "players": [ "karin" ]
+# }
+#
 # TODO: players shouldn't open multiple games
-# Game API
+#
 module Game
-  def player_already_playing?(uuid)
-    doc_ref = firestore.doc("players/#{uuid}")
+  def player_already_playing?(player_id)
+    doc_ref = firestore.doc("players/#{player_id}")
     snapshot = doc_ref.get
     return [404, headers, ['No such player']] unless snapshot.exists?
 
     snapshot.data[:game].to_s.length.positive?
   end
 
-  def save_game_and_update_player(player_id, player_name, board_size, tray_size, number_of_players)
-    id = SecureRandom.uuid
+  def create_game(game_data, player_id)
+    game_id = SecureRandom.uuid
     firestore.transaction do |tx|
-      tx.set("games/#{id}",
-             { board_size:, tray_size:, players: [{ name: player_name, order: 0 }], number_of_players:,
-               status: 'open' })
-      tx.update("players/#{player_id}", { game: id })
+      tx.set("games/#{game_id}", game_data)
+      tx.update("players/#{player_id}", { game: game_id })
     end
-    [201, [{ id: }.to_json]]
+    [201, [{ game_id: }.to_json]]
+  end
+
+  def game_data(payload)
+    {
+      status: 'open',
+      board_size: payload['board_size'] || 11,
+      tray_size: payload['tray_size'] || 7,
+      players: [payload['player_name']],
+      number_of_players: payload['number_of_players'] || 2
+    }
   end
 
   def new_game(payload)
     return [409, ['Player is already playing']] if player_already_playing?(payload['player_id'])
 
-    save_game_and_update_player(payload['player_id'],
-                                payload['player_name'],
-                                payload['board_size'] || 11,
-                                payload['tray_size'] || 7,
-                                payload['number_of_players'] || 2)
+    create_game(game_data(payload))
+  end
+
+  def add_player_to_game(game_id, player_name)
+    firestore.transaction do |tx|
+      snapshot = firestore.doc("games/#{game_id}").get
+      return [404, 'Missing game'] unless snapshot.exists?
+
+      game_data = snapshot.data
+      game_data['players'] << player_name
+      tx.set("games/#{game_id}", game_data)
+
+      tx.update("players/#{player_id}", { game: game_id })
+    end
+    200
+  end
+
+  def join_game(payload)
+    return [409, ['Player is already playing']] if player_already_playing?(payload['player_id'])
+
+    add_player_to_game(payload['player_id'], payload['player_name'])
   end
 
   def fetch_open_games
@@ -46,7 +87,7 @@ module Game
     [200, [games.to_json]]
   end
 
-  def retrieve_game(player_id)
+  def fetch_game(player_id)
     snapshot = firestore.doc("players/#{player_id}").get
     return [404, 'No such player'] unless snapshot.exists?
 

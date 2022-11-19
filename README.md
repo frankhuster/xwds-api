@@ -154,7 +154,8 @@ Open game waiting for opponent(s)
       "name": "karin",
       "order": 0
     }
-  ],
+  ]
+}
 ```
 
 Ongoing game
