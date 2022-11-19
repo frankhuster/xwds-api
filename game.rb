@@ -39,11 +39,11 @@ module Game
     query = ref.where('status', '=', 'open')
     games = []
     query.get do |game|
-      g = { id: game.document_id, players: game.data[:players] }.to_s
+      g = { id: game.document_id, players: game.data[:players] }
       games << g
     end
 
-    [200, games]
+    [200, [games.to_json]]
   end
 
   def retrieve_game(player_id)
